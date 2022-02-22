@@ -1,0 +1,105 @@
+package matrixmultiplication;
+
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.fs.*;
+import.org.apache.hadoop.mapred.*;
+
+public class driver
+{
+public static void main(String args[]) throws Exception
+{
+JobConf conf=new JobConf(driver.class);
+conf.setMapperClass(mapper.class);
+conf.setReducerClass(reducer.class);
+conf.setOutputKeyClass(Text.class);
+conf.setOutputValueClass(Text.class);
+FileInputFormat.addInputPath(conf,new Path(args[0]));
+FileOutputFormat.setOutputPath(conf,new Path(args[1]));
+JobClient.runJob(conf);
+}}
+
+mapper.java
+
+package matrixmultiplication;
+import java.io.IOException;
+
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class mapper extends MapReduceBase implements Mapper<LongWritable,Text,Text,Text>
+{
+public void map(LongWritable key, Text value, OutputCollector<Text, Text> values, Reporter r) throws IOException 
+{
+int m=2;
+int p=3;
+String line=value.toString();
+String[] indices=line.split(",");
+Text outputKey=new Text();
+Text outputValue-new Text();
+if(indice[0].equals("A"))
+{
+for(int k=0; k<p;k++)
+{
+outputKey.set(indices[1]+","+k);
+outputValue.set("A,"+indices[2]+","+indices[3]);
+values.collect(outputKey,outputValue);
+}
+}
+else
+{
+for(int i=0;i<m;i++)
+{
+outputKey.set(i+","+indices[2]);
+outputValue.set("B,"+indices[1]+","+indices[3]);
+values.collect(outputKey,outputValue);
+}
+}
+}
+}
+
+
+reducer.java
+
+package matrixmul;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.HashMap;
+
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class reducer extends MapReduceBase implements Reducer<Text,Text,Text,Text>
+{
+public void reduce(Text key, Iterator<Text> value1, OutputCollector<Text, Text> values, Reporter r) throws IOException 
+{
+String[] value;
+HashMap<Integer,Float> hashA=new HashMap<Integer,Float>;
+HashMap<Integer,Float> hashB=new HashMap<Integer,Float>;
+
+while(value1.hasNext())
+{
+value=value1.toString(),split(",");
+if(value[0].equals("A"))
+{
+hashA.put(Integer.parseInt(value[1]),Float.parseFloat(value[2]));
+}
+else
+{
+hashB.put(Integer.parseInt(value[1]),Float.parseFloat(value[2]));
+}
+}
+
+int a_ij,b_jk,n=5;
+float result=0.0f;
+for(int j=0;j<n;j++)
+{
+a_ij=hashA.containsKey(j)?hashA.get(j):0.0f;
+b_jk=hashB.containsKey(j)?hashB.get(j):0.0f;
+result=a_ij*b_jk;
+}
+if(result !=0.0f)
+{
+values.collect(null,new Text(key.toString+","+Float.toString(result)));
+}
+}
+}

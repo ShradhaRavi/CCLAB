@@ -1,0 +1,56 @@
+package wc;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class driver {
+	public static void main(String args[])throws Exception{
+		JobConf conf=new JobConf(driver.class);
+		conf.setMapperClass(mapper.class);
+		conf.setReducerClass(reducer.class);
+		conf.setOutputKeyClass(Text.class);
+		conf.setOutputValueClass(IntWritable.class);
+		FileInputFormat.addInputPath(conf, new Path(args[0]));
+		FileOutputFormat.setOutputPath(conf, new Path(args[1]));
+		JobClient.runJob(conf);
+	}
+
+}
+
+mapper.java
+
+package wc;
+import java.io.IOException;
+
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class mapper extends MapReduceBase implements Mapper<LongWritable,Text,Text,IntWritable>{
+	public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> values, Reporter r) throws IOException {
+		String word=value.toString();
+		values.collect(new Text(word),new IntWritable(1));
+	}
+
+}
+
+reducer.java
+
+
+package wc;
+import java.io.IOException;
+import java.util.Iterator;
+
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class reducer extends MapReduceBase implements Reducer<Text,IntWritable,Text,IntWritable>{
+public void reduce(Text key, Iterator<IntWritable> value1, OutputCollector<Text, IntWritable> values, Reporter r) throws IOException {
+            int count=0;
+            int total=0;
+            while(value1.hasNext()){
+                total += value1.next().get();
+                count+=1;
+            }
+            values.collect(key, new IntWritable(count));
+}
+}

@@ -1,0 +1,35 @@
+mapper.java 
+
+package insurance;
+import java.io.IOException;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class mapper extends MapReduceBase implements Mapper<LongWritable,Text,Text,IntWritable>
+{
+public void map(LongWritable key, Text value,OutputCollector<Text,IntWritable> values,Reporter r)
+{
+String line=value.toString();
+String[] CountyData=line.split(",");
+values.collect(new Text(CountyData[16]),new IntWritable(1));
+}}
+
+reducer.java
+package insurance;
+import java.io.IOException;
+import java.util.Iterator;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class reducer extends MapReduceBase implements Reducer<Text,IntWritable,Text,IntWritable>
+{
+public void reduce(Text key, Iterator<IntWritable> value1,OutputCollector<Text,IntWritable> values,Reporter r)
+{
+int frequency=0;
+while(value1.hasNext())
+{
+frequency+=value1.next().get();
+}
+values.collect(key,new IntWritable(frequency));
+}
+}
