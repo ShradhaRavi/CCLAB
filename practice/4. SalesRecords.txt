@@ -1,0 +1,54 @@
+mapper.java
+
+package sales;
+import java.io.IOException;
+
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class mapper extends MapReduceBase implements Mapper<LongWritable,Text,Text,IntWritable>{
+	public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> values, Reporter r) throws IOException {
+		String[] arr=value.toString().split(",");
+		String product="1 "+arr[1];
+            String country = "2 "+arr[7];
+		values.collect(new Text(country), new IntWritable(1));
+		values.collect(new Text(product), new IntWritable(1));
+	}
+
+}
+
+
+
+reducer.java
+
+package sales;
+import java.io.IOException;
+import java.util.Iterator;
+
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapred.*;
+
+public class reducer extends MapReduceBase implements Reducer<Text,IntWritable,Text,IntWritable>
+{
+public void reduce(Text key, Iterator<IntWritable> value1, OutputCollector<Text, IntWritable> values, Reporter r) throws IOException 
+{
+if (key.charAt(0) == '1') 
+{
+int productfreq=0;
+int productsum=0;
+while (value1.hasNext()) {
+productfreq += 1;
+productsum += value1.next().get();
+}
+String k = "product "+key;
+values.collect(new Text(k), new IntWritable(productfreq));
+} else {
+int countrysum = 0;
+while (value1.hasNext()) {
+countrysum += value1.next().get();
+}
+String k = "country "+key;
+values.collect(new Text(k), new IntWritable(countrysum));
+}
+}
+}
